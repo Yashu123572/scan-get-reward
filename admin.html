@@ -40,6 +40,26 @@
    <div class="stat"><b id="redeemedCount">—</b><span>REDEEMED</span></div>
    <div class="stat"><b id="remainingCount">—</b><span>REMAINING</span></div>
   </div>
+<section id="validityPanel" class="admin-card admin-section hidden">
+  <div class="section-index">OWNER ONLY — COUPON SETTINGS</div>
+  <h2>Coupon validity.</h2>
+  <p>Choose how many days newly generated coupons remain valid.</p>
+
+  <label for="validityDays">COUPON VALIDITY</label>
+  <select id="validityDays">
+    <option value="1">1 Day</option>
+    <option value="3">3 Days</option>
+    <option value="7" selected>7 Days</option>
+    <option value="15">15 Days</option>
+    <option value="30">30 Days</option>
+    <option value="60">60 Days</option>
+    <option value="90">90 Days</option>
+  </select>
+
+  <button id="saveValidity" class="small-btn">Save Coupon Validity</button>
+  <p id="validityStatus" class="status" aria-live="polite"></p>
+</section>
+
 
   <section id="staffPanel" class="admin-card admin-section hidden">
    <div class="section-index">OWNER ONLY — TEAM MANAGEMENT</div><h2>Add a staff account.</h2>
