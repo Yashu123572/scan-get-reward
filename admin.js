@@ -176,9 +176,7 @@ async function loadCoupons() {
       code: String(row[1] ?? ""),
       discount: row[2],
       status: String(row[3] ?? ""),
-      created: row[4]
-        ? new Date(row[4]).toLocaleString()
-        : ""
+      created: String(row[4] ?? "")
     }));
 
     renderCoupons();
