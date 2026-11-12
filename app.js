@@ -2,7 +2,7 @@
 const CONFIG = {
   apiUrl: "https://script.google.com/macros/s/AKfycbzesiP83l5SkdKDFTEhzXlwhFNKg47Bnl8MIQP5k2uHsqsTnKdgm3rY197ReEoPPwld7g/exec",
   couponAction: "generateCoupon",
-  whatsappNumber: "" // Add business WhatsApp number with country code, digits only.
+  whatsappNumber: "918112950247" // Add business WhatsApp number with country code, digits only.
 };
 
 const $ = (id) => document.getElementById(id);
