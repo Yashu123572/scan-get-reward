@@ -1,114 +1,358 @@
+
 const API_URL = "https://script.google.com/macros/s/AKfycbzesiP83l5SkdKDFTEhzXlwhFNKg47Bnl8MIQP5k2uHsqsTnKdgm3rY197ReEoPPwld7g/exec";
+
 let sessionToken = "";
 let currentRole = "";
 let currentEmail = "";
 let couponRecords = [];
 
 const $ = (id) => document.getElementById(id);
+
+// API connection
 async function api(action, values = {}) {
   const response = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
     body: JSON.stringify({ action, ...values })
   });
+
   const payload = await response.json();
-  if (!payload.success) throw new Error(payload.error || "Request failed.");
+
+  if (!payload.success) {
+    throw new Error(payload.error || "Request failed.");
+  }
+
   return payload.data;
 }
 
+// ADMIN LOGIN
 $("login").addEventListener("click", async () => {
   const email = $("email").value.trim();
   const password = $("password").value;
   const selectedRole = $("role").value;
+
   $("loginStatus").textContent = "Signing in...";
   $("login").disabled = true;
+
   try {
-    const result = await api("login", { email, password });
+    const result = await api("login", {
+      email,
+      password
+    });
+
     if (selectedRole && result.role !== selectedRole) {
       await api("logout", { token: result.token });
       throw new Error("Selected access type does not match this account.");
     }
+
     sessionToken = result.token;
     currentRole = result.role;
     currentEmail = result.email;
+
     $("loginPanel").classList.add("hidden");
     $("dashboard").classList.remove("hidden");
+
     $("welcome").textContent = "Welcome to your workspace.";
-    $("accountRole").textContent = `${currentEmail} · ${currentRole.toUpperCase()}`;
-    $("staffPanel").classList.toggle("hidden", currentRole !== "owner");
+
+    $("accountRole").textContent =
+      `${currentEmail} · ${currentRole.toUpperCase()}`;
+
+    // Owner-only panels
+    $("staffPanel").classList.toggle(
+      "hidden",
+      currentRole !== "owner"
+    );
+
+    $("validityPanel").classList.toggle(
+      "hidden",
+      currentRole !== "owner"
+    );
+
     await loadDashboard();
     await loadCoupons();
+
+    if (currentRole === "owner") {
+      await loadValiditySettings();
+    }
+
   } catch (error) {
     $("loginStatus").textContent = error.message;
+
+    sessionToken = "";
+    currentRole = "";
+    currentEmail = "";
+
   } finally {
     $("login").disabled = false;
   }
 });
 
+// DASHBOARD STATISTICS
 async function loadDashboard() {
-  const stats = await api("dashboard", { token: sessionToken });
+  const stats = await api("dashboard", {
+    token: sessionToken
+  });
+
   $("totalCount").textContent = stats.total;
   $("redeemedCount").textContent = stats.redeemed;
   $("remainingCount").textContent = stats.pending;
 }
 
-async function loadCoupons() {
-  $("recordsStatus").textContent = "Loading records...";
+// LOAD CURRENT COUPON VALIDITY
+async function loadValiditySettings() {
+  $("validityStatus").textContent = "Loading validity...";
+
   try {
-    const rows = await api("listCoupons", { token: sessionToken });
-    couponRecords = rows.slice(1).map(row => ({
-      phone: String(row[0] ?? ""), code: String(row[1] ?? ""),
-      discount: row[2], status: String(row[3] ?? ""),
-      created: row[4] ? new Date(row[4]).toLocaleString() : ""
-    }));
-    renderCoupons();
-    $("recordsStatus").textContent = `${couponRecords.length} records loaded.`;
-  } catch (error) { $("recordsStatus").textContent = error.message; }
+    const result = await api("getCouponValidity", {
+      token: sessionToken
+    });
+
+    $("validityDays").value = String(result.days);
+
+    $("validityStatus").textContent =
+      "Current validity: " + result.days + " days.";
+
+  } catch (error) {
+    $("validityStatus").textContent = error.message;
+  }
 }
 
+// SAVE COUPON VALIDITY
+async function saveValiditySettings() {
+  if (currentRole !== "owner") {
+    $("validityStatus").textContent =
+      "Only the Owner can change coupon validity.";
+    return;
+  }
+
+  const days = Number($("validityDays").value);
+
+  if (![1, 3, 7, 15, 30, 60, 90].includes(days)) {
+    $("validityStatus").textContent =
+      "Please select a valid number of days.";
+    return;
+  }
+
+  $("saveValidity").disabled = true;
+  $("validityStatus").textContent = "Saving validity...";
+
+  try {
+    const result = await api("setCouponValidity", {
+      token: sessionToken,
+      days: days
+    });
+
+    $("validityStatus").textContent =
+      "Success! New coupons will be valid for " +
+      result.days + " days.";
+
+  } catch (error) {
+    $("validityStatus").textContent = error.message;
+
+  } finally {
+    $("saveValidity").disabled = false;
+  }
+}
+
+// CONNECT SAVE BUTTON
+$("saveValidity").addEventListener(
+  "click",
+  saveValiditySettings
+);
+
+// LOAD COUPON RECORDS
+async function loadCoupons() {
+  $("recordsStatus").textContent = "Loading records...";
+
+  try {
+    const rows = await api("listCoupons", {
+      token: sessionToken
+    });
+
+    couponRecords = rows.slice(1).map(row => ({
+      phone: String(row[0] ?? ""),
+      code: String(row[1] ?? ""),
+      discount: row[2],
+      status: String(row[3] ?? ""),
+      created: row[4]
+        ? new Date(row[4]).toLocaleString()
+        : ""
+    }));
+
+    renderCoupons();
+
+    $("recordsStatus").textContent =
+      `${couponRecords.length} records loaded.`;
+
+  } catch (error) {
+    $("recordsStatus").textContent = error.message;
+  }
+}
+
+// RENDER COUPON TABLE
 function renderCoupons() {
   const q = $("search").value.trim().toLowerCase();
-  const filtered = couponRecords.filter(r => r.phone.toLowerCase().includes(q) || r.code.toLowerCase().includes(q));
-  $("couponRows").innerHTML = filtered.length ? filtered.map(r => `
-    <tr><td>${escapeHtml(r.phone)}</td><td class="tag">${escapeHtml(r.code)}</td>
-    <td>${escapeHtml(r.discount)}%</td><td>${escapeHtml(r.status)}</td>
-    <td>${escapeHtml(r.created)}</td><td>${r.status === "Redeemed" ? "—" : `<button data-code="${escapeHtml(r.code)}" class="redeem">Redeem</button>`}</td></tr>`).join("") : '<tr><td colspan="6">No matching records.</td></tr>';
-  document.querySelectorAll(".redeem").forEach(button => button.addEventListener("click", async () => {
-    if (!confirm(`Redeem coupon ${button.dataset.code}?`)) return;
-    button.disabled = true;
-    try {
-      const result = await api("redeemCoupon", { code: button.dataset.code, token: sessionToken });
-      alert(result.message);
-      await loadDashboard(); await loadCoupons();
-    } catch (error) { alert(error.message); button.disabled = false; }
-  }));
+
+  const filtered = couponRecords.filter(r =>
+    r.phone.toLowerCase().includes(q) ||
+    r.code.toLowerCase().includes(q)
+  );
+
+  $("couponRows").innerHTML = filtered.length
+    ? filtered.map(r => `
+      <tr>
+        <td>${escapeHtml(r.phone)}</td>
+        <td class="tag">${escapeHtml(r.code)}</td>
+        <td>${escapeHtml(r.discount)}%</td>
+        <td>${escapeHtml(r.status)}</td>
+        <td>${escapeHtml(r.created)}</td>
+        <td>
+          ${
+            ["Redeemed", "Expired"].includes(r.status)
+              ? "—"
+              : `<button data-code="${escapeHtml(r.code)}" class="redeem">Redeem</button>`
+          }
+        </td>
+      </tr>
+    `).join("")
+    : '<tr><td colspan="6">No matching records.</td></tr>';
+
+  document.querySelectorAll(".redeem").forEach(button => {
+    button.addEventListener("click", async () => {
+      if (!confirm(`Redeem coupon ${button.dataset.code}?`)) {
+        return;
+      }
+
+      button.disabled = true;
+
+      try {
+        const result = await api("redeemCoupon", {
+          code: button.dataset.code,
+          token: sessionToken
+        });
+
+        alert(result.message);
+
+        await loadDashboard();
+        await loadCoupons();
+
+      } catch (error) {
+        alert(error.message);
+        button.disabled = false;
+      }
+    });
+  });
 }
+
+// HTML SECURITY HELPER
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[c]);
 }
+
+// SEARCH
 $("search").addEventListener("input", renderCoupons);
-$("refresh").addEventListener("click", async () => { await loadDashboard(); await loadCoupons(); });
+
+// REFRESH
+$("refresh").addEventListener("click", async () => {
+  await loadDashboard();
+  await loadCoupons();
+
+  if (currentRole === "owner") {
+    await loadValiditySettings();
+  }
+});
+
+// CREATE STAFF ACCOUNT
 $("addStaff").addEventListener("click", async () => {
   $("staffStatus").textContent = "Creating staff account...";
   $("addStaff").disabled = true;
+
   try {
-    await api("createStaff", { token: sessionToken, email: $("staffEmail").value.trim(), password: $("staffPassword").value });
-    $("staffStatus").textContent = "Staff account created. Share the login details privately.";
-    $("staffEmail").value = ""; $("staffPassword").value = "";
-  } catch (error) { $("staffStatus").textContent = error.message; }
-  finally { $("addStaff").disabled = false; }
+    await api("createStaff", {
+      token: sessionToken,
+      email: $("staffEmail").value.trim(),
+      password: $("staffPassword").value
+    });
+
+    $("staffStatus").textContent =
+      "Staff account created. Share the login details privately.";
+
+    $("staffEmail").value = "";
+    $("staffPassword").value = "";
+
+  } catch (error) {
+    $("staffStatus").textContent = error.message;
+
+  } finally {
+    $("addStaff").disabled = false;
+  }
 });
+
+// EXPORT CSV
 $("export").addEventListener("click", () => {
-  const header = ["Phone","Coupon Code","Discount","Status","Created At"];
-  const lines = [header, ...couponRecords.map(r => [r.phone,r.code,r.discount,r.status,r.created])]
-    .map(row => row.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(",")).join("\\n");
-  const blob = new Blob([lines], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob); const a = document.createElement("a");
-  a.href = url; a.download = "scan-get-reward-coupons.csv"; a.click(); URL.revokeObjectURL(url);
+  const header = [
+    "Phone",
+    "Coupon Code",
+    "Discount",
+    "Status",
+    "Created At"
+  ];
+
+  const lines = [
+    header,
+    ...couponRecords.map(r => [
+      r.phone,
+      r.code,
+      r.discount,
+      r.status,
+      r.created
+    ])
+  ]
+    .map(row =>
+      row.map(v =>
+        `"${String(v ?? "").replace(/"/g, '""')}"`
+      ).join(",")
+    )
+    .join("\n");
+
+  const blob = new Blob([lines], {
+    type: "text/csv;charset=utf-8"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "scan-get-reward-coupons.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
 });
+
+// LOGOUT
 $("logout").addEventListener("click", async () => {
-  try { await api("logout", { token: sessionToken }); } catch (_) {}
-  sessionToken = ""; currentRole = ""; currentEmail = ""; couponRecords = [];
-  $("dashboard").classList.add("hidden"); $("loginPanel").classList.remove("hidden");
-  $("password").value = ""; $("loginStatus").textContent = "You have signed out.";
+  try {
+    await api("logout", {
+      token: sessionToken
+    });
+  } catch (_) {}
+
+  sessionToken = "";
+  currentRole = "";
+  currentEmail = "";
+  couponRecords = [];
+
+  $("dashboard").classList.add("hidden");
+  $("loginPanel").classList.remove("hidden");
+
+  $("password").value = "";
+  $("loginStatus").textContent = "You have signed out.";
 });
