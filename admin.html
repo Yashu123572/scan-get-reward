@@ -4,46 +4,409 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#090909">
-<title>Partner Console — SCAN & GET REWARD</title>
+<meta name="theme-color" content="#09090d">
+<title>Reward Control Center — SCAN & GET REWARD</title>
 <link rel="stylesheet" href="styles.css">
 
 <style>
-.admin-wrap{max-width:1100px;margin:60px auto;padding:0 6% 90px}
-.admin-top{display:flex;justify-content:space-between;align-items:center;gap:15px}
-.admin-wrap h1{font-size:clamp(38px,5vw,58px);margin:18px 0}
-.admin-lede{color:#aaa69d;font-size:13px;line-height:1.8;max-width:680px}
-.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}
-.admin-card{border:1px solid #494233;background:#14130f;padding:25px;min-width:0}
-.admin-card h2{font:700 18px var(--display)}
-.admin-card p,.muted{color:#99958b;font-size:11px;line-height:1.8}
-.admin-card label{display:block;font-size:9px;letter-spacing:.12em;margin:16px 0 8px}
-.admin-card input,.admin-card select{width:100%;height:45px;background:#090909;border:1px solid #555044;color:#fff;padding:0 12px}
-.admin-card button,.action-btn{margin-top:14px;border:0;cursor:pointer}
-.admin-notice{border-left:2px solid var(--gold);padding:13px 16px;background:#1b1913;color:#c9c1af;font-size:10px;line-height:1.8;margin-top:22px}
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
-.stat{padding:18px;border:1px solid #353229}
-.stat b{display:block;font:700 25px var(--display);color:var(--gold)}
-.stat span{font-size:8px;letter-spacing:.12em;color:#99958b}
-.hidden{display:none!important}
-.status{min-height:18px}
-.admin-section{margin-top:22px}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:15px 0}
-.toolbar input{flex:1;min-width:190px;height:42px;background:#090909;border:1px solid #555044;color:#fff;padding:0 12px}
-.toolbar button,.small-btn{padding:11px 15px;background:#c9aa69;color:#15120b;font-weight:700;border:0;cursor:pointer}
-.table-wrap{overflow:auto;border:1px solid #39352b}
-table{width:100%;border-collapse:collapse;min-width:760px;font-size:11px}
-th,td{text-align:left;padding:12px;border-bottom:1px solid #302c23}
-th{color:#d5b978;letter-spacing:.1em;font-size:9px}
-td{color:#ddd}
-td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:10px}
-.tag{color:#d9bd82}
-.admin-back{font-size:10px;color:var(--gold)}
-@media(max-width:700px){
-.admin-grid{grid-template-columns:1fr}
-.stat-grid{grid-template-columns:repeat(3,1fr)}
-.admin-wrap{margin-top:35px;padding-left:20px;padding-right:20px}
-.admin-card{padding:20px}
+:root {
+  --adm-bg:#09090d;
+  --adm-panel:#14141d;
+  --adm-line:#292936;
+  --adm-text:#f7f4fb;
+  --adm-muted:#a4a1b2;
+  --adm-orange:#ff8a35;
+  --adm-pink:#f044a5;
+  --adm-grad:linear-gradient(110deg,#ff963d,#f044a5);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(240,68,165,.13),transparent 35%),
+    radial-gradient(ellipse at 90% 8%,rgba(255,138,53,.13),transparent 32%),
+    var(--adm-bg) !important;
+  color:var(--adm-text) !important;
+}
+
+.site-header {
+  background:rgba(9,9,13,.94) !important;
+  border-bottom:1px solid var(--adm-line) !important;
+  backdrop-filter:blur(16px);
+}
+
+.brand-mark {
+  border-color:var(--adm-orange) !important;
+  color:#ffb06e !important;
+}
+
+.brand-name,.admin-back {
+  color:#f6eaf2 !important;
+}
+
+.admin-wrap {
+  max-width:1180px;
+  margin:48px auto;
+  padding:0 24px 90px;
+}
+
+.admin-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:20px;
+  margin:38px 0 26px;
+}
+
+.admin-kicker,.section-index {
+  color:#ff9b61 !important;
+  font-size:10px !important;
+  letter-spacing:.18em !important;
+  font-weight:800;
+}
+
+.admin-wrap h1 {
+  font-size:clamp(36px,5vw,58px);
+  line-height:1.05;
+  margin:12px 0;
+  color:#fff;
+}
+
+.admin-wrap h1 em {
+  font-style:normal;
+  background:var(--adm-grad);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.admin-lede {
+  color:var(--adm-muted);
+  font-size:14px;
+  line-height:1.7;
+  max-width:650px;
+}
+
+.admin-chip {
+  border:1px solid #493044;
+  border-radius:999px;
+  padding:9px 14px;
+  color:#ffc18e;
+  background:rgba(240,68,165,.08);
+  font-size:11px;
+  white-space:nowrap;
+}
+
+.admin-notice {
+  border:1px solid #493044;
+  border-left:3px solid var(--adm-pink);
+  border-radius:14px;
+  padding:14px 17px;
+  background:linear-gradient(100deg,rgba(240,68,165,.09),rgba(255,138,53,.06));
+  color:#c8c2d3;
+  font-size:12px;
+  line-height:1.7;
+  margin:20px 0;
+}
+
+.admin-grid {
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:18px;
+  margin-top:22px;
+}
+
+.admin-card {
+  border:1px solid var(--adm-line) !important;
+  border-radius:18px !important;
+  background:linear-gradient(145deg,rgba(25,25,37,.98),rgba(17,17,26,.98)) !important;
+  padding:25px !important;
+  box-shadow:0 16px 45px rgba(0,0,0,.2);
+  min-width:0;
+}
+
+.admin-card h2 {
+  font-size:20px !important;
+  color:#fff !important;
+  margin:10px 0 8px;
+}
+
+.admin-card p,.muted {
+  color:var(--adm-muted) !important;
+  font-size:12px !important;
+  line-height:1.8;
+}
+
+.admin-card label {
+  display:block;
+  color:#c9c4d3;
+  font-size:10px !important;
+  letter-spacing:.12em;
+  margin:17px 0 8px;
+}
+
+.admin-card input,
+.admin-card select,
+.toolbar input {
+  width:100%;
+  height:48px;
+  background:#0c0c13 !important;
+  border:1px solid #343444 !important;
+  border-radius:10px !important;
+  color:#fff !important;
+  padding:0 14px !important;
+  outline:none;
+}
+
+.admin-card input:focus,
+.admin-card select:focus,
+.toolbar input:focus {
+  border-color:#ef5a9f !important;
+  box-shadow:0 0 0 3px rgba(240,68,165,.12);
+}
+
+.admin-card button,
+.small-btn,
+.toolbar button {
+  border:0 !important;
+  border-radius:10px !important;
+  cursor:pointer;
+  padding:12px 16px;
+  background:var(--adm-grad) !important;
+  color:#180d15 !important;
+  font-weight:800 !important;
+  transition:transform .15s ease,filter .15s ease;
+}
+
+.admin-card button:hover,
+.small-btn:hover,
+.toolbar button:hover {
+  transform:translateY(-1px);
+  filter:brightness(1.08);
+}
+
+#login {
+  width:100%;
+  margin-top:22px;
+  min-height:49px;
+}
+
+.status {
+  min-height:20px;
+  color:#ffbd91 !important;
+  font-size:12px !important;
+}
+
+.login-side {
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-height:100%;
+}
+
+.login-feature {
+  display:flex;
+  gap:13px;
+  align-items:flex-start;
+  margin:22px 0;
+}
+
+.feature-dot {
+  flex:0 0 34px;
+  width:34px;
+  height:34px;
+  border-radius:11px;
+  background:var(--adm-grad);
+  display:grid;
+  place-items:center;
+  color:#1b0e16;
+  font-weight:900;
+}
+
+.login-feature b {
+  display:block;
+  color:#f5f0fa;
+  font-size:13px;
+  margin-bottom:4px;
+}
+
+.login-feature span {
+  display:block;
+  color:var(--adm-muted);
+  font-size:11px;
+  line-height:1.6;
+}
+
+.stat-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+  margin:24px 0;
+}
+
+.stat {
+  position:relative;
+  overflow:hidden;
+  padding:22px;
+  border:1px solid var(--adm-line);
+  border-radius:16px;
+  background:linear-gradient(145deg,#191925,#11111a);
+}
+
+.stat:after {
+  content:"";
+  position:absolute;
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  right:-42px;
+  top:-48px;
+  background:rgba(240,68,165,.12);
+}
+
+.stat b {
+  display:block;
+  font-size:32px;
+  color:#fff;
+  line-height:1.2;
+  margin-bottom:8px;
+}
+
+.stat span {
+  font-size:9px;
+  letter-spacing:.15em;
+  color:#aaa5b7;
+  font-weight:800;
+}
+
+.admin-section {
+  margin-top:20px;
+}
+
+.admin-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+}
+
+.toolbar {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin:18px 0;
+}
+
+.toolbar input {
+  flex:1;
+  min-width:220px;
+}
+
+.table-wrap {
+  overflow:auto;
+  border:1px solid var(--adm-line);
+  border-radius:12px;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  min-width:790px;
+  font-size:12px;
+}
+
+th,td {
+  text-align:left;
+  padding:15px 13px;
+  border-bottom:1px solid #292936;
+}
+
+th {
+  color:#ffad79;
+  font-size:9px;
+  letter-spacing:.14em;
+  background:#191822;
+}
+
+td {
+  color:#e7e2ed;
+}
+
+td button {
+  padding:8px 12px !important;
+  font-size:10px;
+}
+
+.tag {
+  color:#ffb27e !important;
+  font-weight:800;
+}
+
+.hidden {
+  display:none !important;
+}
+
+#logout {
+  background:#272331 !important;
+  color:#f5d9eb !important;
+  border:1px solid #4a3548 !important;
+}
+
+#saveValidity,#addStaff {
+  margin-top:16px;
+}
+
+.admin-footer-note {
+  margin-top:24px;
+}
+
+@media(max-width:760px) {
+  .admin-wrap {
+    padding:0 16px 60px;
+    margin-top:25px;
+  }
+
+  .admin-heading {
+    display:block;
+    margin:28px 0 20px;
+  }
+
+  .admin-chip {
+    display:inline-block;
+    margin-top:14px;
+  }
+
+  .admin-grid {
+    grid-template-columns:1fr;
+  }
+
+  .stat-grid {
+    gap:8px;
+  }
+
+  .stat {
+    padding:14px 10px;
+  }
+
+  .stat b {
+    font-size:25px;
+  }
+
+  .stat span {
+    font-size:8px;
+  }
+
+  .admin-card {
+    padding:19px !important;
+  }
+
+  .admin-top {
+    align-items:flex-start;
+  }
+
+  .toolbar input {
+    min-width:100%;
+  }
 }
 </style>
 </head>
@@ -60,54 +423,80 @@ td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:
 
 <main class="admin-wrap">
 
- <div class="section-index">PRIVATE AREA — PARTNER & TEAM ACCESS</div>
- <h1>Partner <em>console.</em></h1>
-
- <p class="admin-lede">
- A dedicated workspace for coupon verification, redemption and campaign reporting. Sign in with your authorized account.
- </p>
+ <div class="admin-heading">
+  <div>
+   <div class="admin-kicker">SCAN & GET REWARD / MANAGEMENT</div>
+   <h1>Reward <em>Control Center.</em></h1>
+   <p class="admin-lede">
+    Manage customer coupons, verify redemptions and monitor your reward campaign from one secure workspace.
+   </p>
+  </div>
+  <div class="admin-chip">● PRIVATE ADMIN AREA</div>
+ </div>
 
  <div class="admin-notice">
-  <b>SECURITY NOTE</b><br>
-  Admin actions require a server-issued session. Staff accounts can only be created by the Owner. Customer mobile numbers are not verified by OTP.
+  <b>SECURITY & ACCESS</b><br>
+  Owner can manage staff and coupon validity. Staff can view coupons and process redemptions. Customer mobile numbers are not verified by OTP.
  </div>
 
  <section id="loginPanel" class="admin-grid">
 
   <div class="admin-card">
-   <div class="section-index">01 — SECURE SIGN IN</div>
-   <h2>Welcome to your workspace.</h2>
+   <div class="section-index">01 / ACCOUNT ACCESS</div>
+   <h2>Sign in to continue</h2>
+   <p>Use your authorized Owner or Staff account.</p>
 
-   <label for="role">Access type</label>
+   <label for="role">ACCOUNT TYPE</label>
    <select id="role">
     <option value="">Choose role</option>
     <option value="owner">Owner</option>
     <option value="staff">Staff</option>
    </select>
 
-   <label for="email">Email / staff ID</label>
-   <input id="email" type="email" autocomplete="username" placeholder="Your authorized email">
+   <label for="email">EMAIL ADDRESS</label>
+   <input id="email" type="email" autocomplete="username" placeholder="Enter your authorized email">
 
-   <label for="password">Password</label>
-   <input id="password" type="password" autocomplete="current-password" placeholder="Your password">
+   <label for="password">PASSWORD</label>
+   <input id="password" type="password" autocomplete="current-password" placeholder="Enter your password">
 
-   <button class="button button-gold full" id="login" type="button">
-    Sign in securely ↗
-   </button>
+   <button id="login" type="button">Sign in securely →</button>
 
    <p id="loginStatus" class="status" aria-live="polite">
     Enter your account details to continue.
    </p>
   </div>
 
-  <div class="admin-card">
-   <div class="section-index">02 — WORKSPACE</div>
-   <h2>One place to manage rewards.</h2>
-   <p>
-    Owner: manage staff, view records and redeem coupons.
-    <br><br>
-    Staff: view customer coupons and process redemptions. Staff cannot create other staff accounts.
-   </p>
+  <div class="admin-card login-side">
+   <div>
+    <div class="section-index">02 / YOUR WORKSPACE</div>
+    <h2>Everything in one place.</h2>
+
+    <div class="login-feature">
+     <div class="feature-dot">01</div>
+     <div>
+      <b>Coupon management</b>
+      <span>Search customer coupons, check expiry and redeem valid codes.</span>
+     </div>
+    </div>
+
+    <div class="login-feature">
+     <div class="feature-dot">02</div>
+     <div>
+      <b>Campaign overview</b>
+      <span>Track generated, redeemed and remaining coupons.</span>
+     </div>
+    </div>
+
+    <div class="login-feature">
+     <div class="feature-dot">03</div>
+     <div>
+      <b>Team access</b>
+      <span>Owner can create staff accounts and control coupon validity.</span>
+     </div>
+    </div>
+   </div>
+
+   <p>Keep your login details private. Sign out when using a shared device.</p>
   </div>
 
  </section>
@@ -116,8 +505,8 @@ td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:
 
   <div class="admin-top">
    <div>
-    <div class="section-index">SIGNED IN WORKSPACE</div>
-    <h2 id="welcome" style="margin:8px 0">Campaign overview.</h2>
+    <div class="section-index">LIVE CAMPAIGN OVERVIEW</div>
+    <h2 id="welcome" style="margin:8px 0">Your dashboard</h2>
     <p id="accountRole" class="muted"></p>
    </div>
    <button id="logout" class="small-btn">Sign out</button>
@@ -126,24 +515,24 @@ td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:
   <div class="stat-grid">
    <div class="stat">
     <b id="totalCount">—</b>
-    <span>GENERATED</span>
+    <span>TOTAL GENERATED</span>
    </div>
    <div class="stat">
     <b id="redeemedCount">—</b>
-    <span>REDEEMED</span>
+    <span>COUPONS REDEEMED</span>
    </div>
    <div class="stat">
     <b id="remainingCount">—</b>
-    <span>REMAINING</span>
+    <span>REMAINING COUPONS</span>
    </div>
   </div>
 
   <section id="validityPanel" class="admin-card admin-section hidden">
-   <div class="section-index">OWNER ONLY — COUPON SETTINGS</div>
-   <h2>Coupon validity.</h2>
+   <div class="section-index">OWNER SETTINGS</div>
+   <h2>Coupon validity</h2>
    <p>Choose how many days newly generated coupons remain valid.</p>
 
-   <label for="validityDays">COUPON VALIDITY</label>
+   <label for="validityDays">VALIDITY PERIOD</label>
    <select id="validityDays">
     <option value="1">1 Day</option>
     <option value="3">3 Days</option>
@@ -154,13 +543,13 @@ td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:
     <option value="90">90 Days</option>
    </select>
 
-   <button id="saveValidity" class="small-btn">Save Coupon Validity</button>
+   <button id="saveValidity" class="small-btn">Save validity</button>
    <p id="validityStatus" class="status" aria-live="polite"></p>
   </section>
 
   <section id="staffPanel" class="admin-card admin-section hidden">
-   <div class="section-index">OWNER ONLY — TEAM MANAGEMENT</div>
-   <h2>Add a staff account.</h2>
+   <div class="section-index">OWNER SETTINGS / TEAM</div>
+   <h2>Create staff account</h2>
    <p>Create a separate email and password for each staff member. Share credentials privately.</p>
 
    <div class="admin-grid" style="margin-top:0">
@@ -169,7 +558,7 @@ td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:
      <input id="staffEmail" type="email" placeholder="staff@example.com">
     </div>
     <div>
-     <label for="staffPassword">TEMPORARY PASSWORD (10+ CHARACTERS)</label>
+     <label for="staffPassword">PASSWORD (10+ CHARACTERS)</label>
      <input id="staffPassword" type="password" minlength="10" placeholder="Create a strong password">
     </div>
    </div>
@@ -179,12 +568,12 @@ td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:
   </section>
 
   <section class="admin-card admin-section">
-   <div class="section-index">COUPON MANAGEMENT</div>
-   <h2>Customer records.</h2>
+   <div class="section-index">COUPON DATABASE</div>
+   <h2>Customer coupon records</h2>
 
    <div class="toolbar">
     <input id="search" placeholder="Search mobile number or coupon code">
-    <button id="refresh">Refresh records</button>
+    <button id="refresh">Refresh</button>
     <button id="export">Export CSV</button>
    </div>
 
@@ -193,7 +582,7 @@ td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:
      <thead>
       <tr>
        <th>MOBILE</th>
-       <th>COUPON</th>
+       <th>COUPON CODE</th>
        <th>DISCOUNT</th>
        <th>STATUS</th>
        <th>CREATED</th>
@@ -215,13 +604,13 @@ td button{padding:7px 10px;background:#c9aa69;border:0;cursor:pointer;font-size:
 
  </section>
 
- <div class="admin-notice">
-  Keep staff credentials private. Sign out when using a shared device. Session expires after six hours.
+ <div class="admin-notice admin-footer-note">
+  Security reminder: keep staff credentials private. Your session expires after six hours.
  </div>
 
 </main>
 
-<script src="admin.js?v=3"></script>
+<script src="admin.js?v=4"></script>
 
 </body>
 </html>
